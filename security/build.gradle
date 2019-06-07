@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.multiplatform'
+}
+
+android {
+    compileSdkVersion buildConfig.compileSdk
+    buildToolsVersion versions.buildTools
+
+    defaultConfig {
+        minSdkVersion buildConfig.minSdk
+        targetSdkVersion buildConfig.targetSdk
+    }
+}
+
+kotlin {
+    targets {
+        fromPreset(presets.android, 'android')
+        // This preset is for iPhone emulator
+        // Switch here to presets.iosArm64 to build library for iPhone device
+        fromPreset(presets.iosX64, 'ios') {
+            compilations.main.outputKinds('FRAMEWORK')
+        }
+    }
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlin}"
+                implementation project(':common')
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-test-common:${versions.kotlin}"
+                implementation "org.jetbrains.kotlin:kotlin-test-annotations-common:${versions.kotlin}"
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
+            }
+        }
+        androidTest {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-test:${versions.kotlin}"
+                implementation "org.jetbrains.kotlin:kotlin-test-junit:${versions.kotlin}"
+            }
+        }
+        iosMain {
+//            implementation project(':common')
+        }
+        iosTest {
+        }
+    }
+}
+
+configurations {
+    compileClasspath
+}
