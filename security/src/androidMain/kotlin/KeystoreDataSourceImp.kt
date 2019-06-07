@@ -3,7 +3,7 @@ package com.babel.cdm.components.security
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.babel.cdm.components.common.Either
-import com.babel.cdm.components.security.SecurityError.AndroidCode.*
+import com.babel.cdm.components.security.AndroidCode.*
 import java.security.KeyException
 import java.security.KeyStoreException
 import javax.crypto.KeyGenerator
@@ -17,7 +17,7 @@ class KeystoreDataSourceImp(
         try {
 
             val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-                KeystoreDataSource.ALIAS,
+                ALIAS,
                 KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
@@ -29,7 +29,7 @@ class KeystoreDataSourceImp(
             return Either.Right(keyGenerator.generateKey())
 
         } catch (e: KeyStoreException) {
-            return Either.Left(SecurityError(KEYSTORE_EXCEPTION.code, e.message!!))
+            return Either.Left(SecurityError(KEYSTORE_EXCEPTION.code, e.message?:kotlin.run { "" }))
         } catch (e: KeyException) {
             return Either.Left(SecurityError(KEY_EXCEPTION.code, e.message!!))
         } catch (e: NullPointerException) {
