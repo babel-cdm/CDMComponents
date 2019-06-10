@@ -58,9 +58,9 @@ class KeystoreDataSourceImp(
         } catch (e: NullPointerException) {
             return Either.Left(SecurityError(NULL_POINTER.code, e.message ?: NO_DESCRIPTION))
         } catch (e: UnrecoverableKeyException) {
-            return Either.Left(SecurityError(SMART_SIGN_KEY_DOES_NOT_EXIST.code, e.message ?: NO_DESCRIPTION))
+            return Either.Left(SecurityError(APP_KEY_DOES_NOT_EXIST.code, e.message ?: NO_DESCRIPTION))
         } catch (e: TypeCastException) {
-            return Either.Left(SecurityError(SMART_SIGN_KEY_DOES_NOT_EXIST.code, e.message ?: NO_DESCRIPTION))
+            return Either.Left(SecurityError(APP_KEY_DOES_NOT_EXIST.code, e.message ?: NO_DESCRIPTION))
         }
     }
 
