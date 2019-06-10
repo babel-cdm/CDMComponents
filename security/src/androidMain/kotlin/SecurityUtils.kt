@@ -52,7 +52,7 @@ actual class SecurityUtils actual constructor() {
 
         return keystoreDataSource.getAppKey().fold(
             {
-                if (it.id == SMART_SIGN_KEY_DOES_NOT_EXIST.code) {
+                if (it.id == APP_KEY_DOES_NOT_EXIST.code) {
                     keystoreDataSource.generateAppKey()
                 } else {
                     Either.Left(it)
