@@ -7,13 +7,14 @@ import com.babel.cdm.components.common.CDMComponentsError
 import com.babel.cdm.components.common.Either
 import com.babel.cdm.components.common.fold
 import com.babel.cdm.components.common.map
-import com.babel.cdm.components.security.AndroidCode.*
+import com.babel.cdm.components.security.AndroidCode.APP_KEY_DOES_NOT_EXIST
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+const val EMPTY_VALUE = ""
 
 actual class SecurityUtils actual constructor() {
 
@@ -32,19 +33,42 @@ actual class SecurityUtils actual constructor() {
 
         return encryptedValue.map { e ->
 
-            storeEncryptyedValue(key, e)
+            storeEncryptedValue(key, e)
 
             return@map key
 
         }
     }
 
-    private fun storeEncryptyedValue(key: String, e: EncryptedValue) {
+    actual fun retrieveFromSecureStorage(key: String): Either<CDMComponentsError, String> {
+
+        val encryptedValue = retrieveEncryptedValue(key)
+
+        val keystoreDataSource = KeystoreDataSourceImp(
+            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE),
+            keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
+        )
+
+        val secretKey = obtainSecretKey(keystoreDataSource)
+
+        return secretKey.map { decryptText(encryptedValue,it) }
+
+    }
+
+    private fun storeEncryptedValue(key: String, e: EncryptedValue) {
 
         val editor = prefs.edit()
         editor.putString(key, Base64.encodeToString(e.encrypted, Base64.NO_WRAP))
         editor.putString(key + IV_SUFIX, Base64.encodeToString(e.iv, Base64.NO_WRAP))
         editor.apply()
+
+    }
+
+    private fun retrieveEncryptedValue(key: String): EncryptedValue {
+
+        val encrypted = Base64.decode(prefs.getString(key, EMPTY_VALUE), Base64.NO_WRAP)
+        val iv = Base64.decode(prefs.getString(key + IV_SUFIX, EMPTY_VALUE), Base64.NO_WRAP)
+        return EncryptedValue(encrypted, iv)
 
     }
 
@@ -90,10 +114,6 @@ actual class SecurityUtils actual constructor() {
 
         return String(decodedData, Charsets.UTF_8)
 
-    }
-
-    actual fun retrieveFromSecureStorage(key: String): Either<CDMComponentsError, String> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }
