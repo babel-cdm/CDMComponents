@@ -8,8 +8,7 @@ repositories {
 kotlin {
     targets {
         fromPreset(presets.jvm, 'jvm')
-        // This preset is for iPhone emulator
-        // Switch here to presets.iosArm64 to build library for iPhone device
+
         fromPreset(presets.iosX64, 'ios') {
             compilations.main.outputKinds('FRAMEWORK')
         }
@@ -38,8 +37,9 @@ kotlin {
             }
         }
         iosMain {
-        }
-        iosTest {
+            dependencies {
+                
+            }
         }
     }
 }
