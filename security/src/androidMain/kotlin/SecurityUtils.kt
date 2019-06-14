@@ -5,8 +5,6 @@ import android.security.keystore.KeyProperties
 import android.util.Base64
 import com.babel.cdm.components.common.CDMComponentsError
 import com.babel.cdm.components.common.Either
-import com.babel.cdm.components.common.fold
-import com.babel.cdm.components.common.map
 import com.babel.cdm.components.security.AndroidCode.APP_KEY_DOES_NOT_EXIST
 import java.security.KeyStore
 import javax.crypto.Cipher

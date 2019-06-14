@@ -6,7 +6,7 @@ import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import platform.Foundation.*
 import platform.Security.*
-import platform.darwin.OSStatus
+import platform.darwin.UInt8Var
 
 const val ENCRYPT_ERROR = "Encrypt error"
 const val DECRYPT_ERROR = "Decrypt error"
@@ -25,7 +25,7 @@ actual class SecurityUtils actual constructor() {
 
         return if (data != null) {
 
-            val secKey: Either<SecurityError, SecKeyRef> = keychainDataSource.getAppKey().fold(
+            val secKey: Either<SecurityError, SecKeyRef> = keychainDataSource.getAppKey(false).fold(
                 {
                     if (it.id == KEY_NOT_FOUND.code) {
                         keychainDataSource.generateAppKey()
@@ -37,7 +37,6 @@ actual class SecurityUtils actual constructor() {
                     Either.Right(it)
                 })
 
-
             val encryptedValue = secKey.flatMap { encrypt(data, it) }
 
             encryptedValue.flatMap {
@@ -46,16 +45,10 @@ actual class SecurityUtils actual constructor() {
             }
 
         } else {
-
             Either.Left(SecurityError(WRONG_VALUE_PARAM.code, WRONG_VALUE))
-
         }
 
     }
-
-    private fun storeEncryptedValue(encryptedValue: NSData, key: String) =
-        defaults.setObject(encryptedValue, key)
-
 
     actual fun retrieveFromSecureStorage(key: String): Either<CDMComponentsError, String> {
 
@@ -63,7 +56,7 @@ actual class SecurityUtils actual constructor() {
 
         val keychainDataSource = KeychainDataSourceImp()
 
-        val secretKey = keychainDataSource.getAppKey()
+        val secretKey = keychainDataSource.getAppKey(true)
 
         val decryptedData = secretKey.flatMap {
             if (encryptedValue != null) {
@@ -73,47 +66,66 @@ actual class SecurityUtils actual constructor() {
             }
         }
 
-        return decryptedData.flatMap {data ->
+        return decryptedData.flatMap { data ->
             NSString.stringWithUTF8String(data.bytes() as CPointer<ByteVar>)?.let { decryptedValue ->
                 Either.Right(decryptedValue)
-            }?: Either.Left(SecurityError(ENCODING_ERROR.code, ENCODING))
+            } ?: Either.Left(SecurityError(ENCODING_ERROR.code, ENCODING))
         }
 
     }
 
+
+
     private fun encrypt(data: NSData, secKey: SecKeyRef): Either<SecurityError, NSData> {
+        memScoped {
 
-        var error: CValuesRef<CFErrorRefVar>? = null
+            val error = alloc<CFErrorRefVar>()
 
-        val result = SecKeyCreateEncryptedData(
-            key = secKey,
-            algorithm = kSecKeyAlgorithmRSAEncryptionPKCS1,
-            plaintext = data as CFDataRef,
-            error = error
-        )
+            val result = SecKeyCreateEncryptedData(
+                key = secKey,
+                algorithm = kSecKeyAlgorithmRSAEncryptionPKCS1,
+                plaintext = dataToCFData(data),
+                error = error.ptr
+            )
 
-        return result?.let {
-            Either.Right(it as NSData)
-        } ?: Either.Left(SecurityError(UNABLE_TO_ENCRYPT.code, ENCRYPT_ERROR))
+            return result?.let {
+                Either.Right(CFBridgingRelease(it) as NSData)
+            } ?: Either.Left(SecurityError(UNABLE_TO_ENCRYPT.code, ENCRYPT_ERROR))
+        }
 
     }
 
     private fun decrypt(encryptedValue: NSData, secKey: SecKeyRef): Either<SecurityError, NSData> {
 
-        var error: CValuesRef<CFErrorRefVar>? = null
+        memScoped {
 
-        val result = SecKeyCreateDecryptedData(
-            key = secKey,
-            algorithm = kSecKeyAlgorithmRSAEncryptionPKCS1,
-            ciphertext = encryptedValue as CFDataRef,
-            error = error
-        )
+            val error = alloc<CFErrorRefVar>()
 
-        return result?.let {
-            Either.Right(it as NSData)
-        } ?: Either.Left(SecurityError(UNABLE_TO_DECRYPT.code, DECRYPT_ERROR))
+            val result = SecKeyCreateDecryptedData(
+                key = secKey,
+                algorithm = kSecKeyAlgorithmRSAEncryptionPKCS1,
+                ciphertext = dataToCFData(data = encryptedValue),
+                error = error.ptr
+            )
+
+            return result?.let {
+                Either.Right(CFBridgingRelease(it) as NSData)
+            } ?: Either.Left(SecurityError(UNABLE_TO_DECRYPT.code, DECRYPT_ERROR))
+        }
 
     }
 
+    private fun storeEncryptedValue(encryptedValue: NSData, key: String) {
+        defaults.setObject(encryptedValue, key)
+        defaults.synchronize()
+    }
+
     private fun retrieveEncryptedValue(key: String): NSData? = defaults.dataForKey(key)
+
+    private fun dataToCFData(data: NSData): CFDataRef? {
+        return CFDataCreate(
+            kCFAllocatorDefault,
+            data.bytes as CValuesRef<UInt8Var>,
+            NSNumber(unsignedLongLong = data.length) as CFIndex)
+    }
 }
