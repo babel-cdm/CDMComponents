@@ -12,17 +12,20 @@ sealed class Either<out L, out R> {
 
     fun <L> left(a: L) = Left(a)
     fun <R> right(b: R) = Right(b)
+
+    fun <T> fold(left: (L) -> T, right: (R) -> T): T
+            =
+        when (this) {
+            is Either.Left  -> left(value)
+            is Either.Right -> right(value)
+        }
+
+    fun <T> map(f: (R) -> T): Either<L, T> =
+        flatMap { Either.Right(f(it)) }
 }
 
-fun <L, R, T> Either<L, R>.fold(left: (L) -> T, right: (R) -> T): T
-        =
-    when (this) {
-        is Either.Left  -> left(value)
-        is Either.Right -> right(value)
-    }
+
 fun <L, R, T> Either<L, R>.flatMap(f: (R) -> Either<L, T>):
         Either<L, T> =
     fold({ this as Either.Left }, f)
 
-fun <L, R, T> Either<L, R>.map(f: (R) -> T): Either<L, T> =
-    flatMap { Either.Right(f(it)) }

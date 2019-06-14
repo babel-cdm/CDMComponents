@@ -1,7 +1,9 @@
 package com.babel.cdm.components.security
 
-const val KEY_ALIAS = "CDMComponentSecurity"
-const val APP_ALIAS = "CDMComponentSecurity_App"
+const val PUBLIC_KEY_ALIAS = "CDMComponentSecurity.public"
+const val PRIVATE_KEY_ALIAS = "CDMComponentSecurity.privat"
+const val APP_ALIAS = "CDMComponentSecurity.App"
+
 const val KEY_SIZE = 1024
 
 enum class IOSCode(val code: Int){
