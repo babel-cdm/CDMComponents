@@ -1,6 +1,7 @@
 package com.babel.cdm.components.security
 
 import com.babel.cdm.components.common.Either
+import com.babel.cdm.components.common.LoggerUtils
 import com.babel.cdm.components.common.flatMap
 import kotlinx.cinterop.*
 import platform.CoreFoundation.*
@@ -15,27 +16,39 @@ const val NOT_FOUND = "Key not found"
 const val WRONG_VALUE = "Wrong param"
 const val SAVE_KEY = "Error saving the key"
 
+
+
 class KeychainDataSourceImp : KeychainDataSource {
+
+    private val LOG_TAG = "KeychainDataSourceImp"
+
     override fun generateAppKey(): Either<SecurityError, SecKeyRef> {
         memScoped {
 
+            LoggerUtils.logD(LOG_TAG,"Generating app key...")
+            LoggerUtils.logD(LOG_TAG,"Creating public params...")
             val publicKeyAttr = createPublicKeyParams()
+            LoggerUtils.logD(LOG_TAG,"Creating private params...")
             val privateKeyAttr = createPrivateKeyParams()
+            LoggerUtils.logD(LOG_TAG,"Creating key pair params...")
             val generatePairKeyAttr = createGenerateKeyParams( publicKeyAttr, privateKeyAttr)
 
             val publicKey = alloc<SecKeyRefVar>()
             val privateKey = alloc<SecKeyRefVar>()
 
+            LoggerUtils.logD(LOG_TAG,"Generating keys...")
             val status =
                 SecKeyGeneratePair(generatePairKeyAttr, publicKey.ptr, privateKey.ptr)
 
             if (status != errSecSuccess || publicKey.value == null || privateKey.value == null) {
+                LoggerUtils.logE(LOG_TAG,"Key wrong params...")
                 return Either.Left(SecurityError(IOSCode.WRONG_VALUE_PARAM.code, NOT_FOUND))
             }
 
             return saveInKeyChain(publicKey.value!!, false).flatMap {
                 saveInKeyChain(privateKey.value!!, true).flatMap {
-                    getAppKey(false)
+                    LoggerUtils.logD(LOG_TAG,"Keys generated")
+                    return@flatMap getAppKey(false)
                 }
             }
         }
@@ -96,6 +109,8 @@ class KeychainDataSourceImp : KeychainDataSource {
     override fun getAppKey(private: Boolean): Either<SecurityError, SecKeyRef> {
         memScoped {
 
+            LoggerUtils.logD(LOG_TAG, if (private)"Recovering private key..." else "Recovering public key...")
+
             val keyName = if (private) PRIVATE_KEY_ALIAS else PUBLIC_KEY_ALIAS
 
             val query = CFDictionaryCreateMutable(null, 6, null, null)
@@ -112,8 +127,10 @@ class KeychainDataSourceImp : KeychainDataSource {
             val status: OSStatus = SecItemCopyMatching(query, result.ptr)
 
             return if (status == errSecSuccess && result.value != null) {
+                LoggerUtils.logD(LOG_TAG,"Key recovered")
                 Either.Right(result.value as SecKeyRef)
             } else {
+                LoggerUtils.logE(LOG_TAG,"Key not found")
                 Either.Left(SecurityError(IOSCode.KEY_NOT_FOUND.code, WRONG_VALUE))
             }
 
@@ -122,6 +139,8 @@ class KeychainDataSourceImp : KeychainDataSource {
 
     private fun saveInKeyChain(key: SecKeyRef, private: Boolean): Either<SecurityError, Boolean> {
         memScoped {
+
+            LoggerUtils.logD(LOG_TAG, if (private)"Saving private key..." else "Saving public key...")
 
             val keyClass = if (private) kSecAttrKeyClassPrivate else kSecAttrKeyClassPublic
             val keyName = if (private) PRIVATE_KEY_ALIAS else PUBLIC_KEY_ALIAS
@@ -147,8 +166,10 @@ class KeychainDataSourceImp : KeychainDataSource {
             }
 
             return if (status == errSecSuccess) {
+                LoggerUtils.logD(LOG_TAG,"Key stored")
                 Either.Right(true)
             } else {
+                LoggerUtils.logE(LOG_TAG,"Key not stored")
                 Either.Left(SecurityError(IOSCode.SAVE_KEY_ERROR.code, SAVE_KEY))
             }
         }
