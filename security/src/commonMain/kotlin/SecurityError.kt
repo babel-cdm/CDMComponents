@@ -10,8 +10,4 @@ class SecurityError(
         SECURITY_DEFAULT_ANDROID_ERROR(2001)
     }
 
-
-
-
-
 }
