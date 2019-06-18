@@ -1,17 +1,21 @@
 package com.babel.cdm.components.common
 
-internal actual fun debug(tag: String, message: String){
+actual object CDMLogger {
 
-}
+    actual fun debug(tag: String, message: String) {
+        println("⚙️ DEBUG $tag - $message")
+    }
 
-internal actual fun info(tag: String, message: String){
+    actual fun info(tag: String, message: String) {
+        println("ℹ️ INFO $tag - $message")
+    }
 
-}
+    actual fun warn(tag: String, message: String) {
+        println("⚠️ WARN $tag - $message")
+    }
 
-internal actual fun warn(tag: String, message: String){
-
-}
-
-internal actual fun error(tag: String, message: String){
+    actual fun error(tag: String, message: String) {
+        println("🛑️ ERROR $tag - $message")
+    }
 
 }
