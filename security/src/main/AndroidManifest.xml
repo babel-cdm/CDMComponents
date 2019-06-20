@@ -16,6 +16,16 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.babel.cdm.components.security"
-/>
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.babel.cdm.components.security">
+
+
+    <application>
+
+        <provider
+                android:name=".SecurityUtilsProvider"
+                android:authorities="com.babel.cdm.components.security.SecurityUtilsProvider"/>
+
+    </application>
+
+</manifest>
