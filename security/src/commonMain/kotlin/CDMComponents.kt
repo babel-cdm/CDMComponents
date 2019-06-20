@@ -4,7 +4,7 @@ import com.babel.cdm.components.common.LoggerUtils
 
 object CDMComponents {
 
-    val securityUtils = SecurityUtils()
+    lateinit var securityUtils: SecurityUtils
     val loggerUtils = LoggerUtils
 
 }
