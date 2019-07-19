@@ -1,7 +1,9 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.multiplatform'
+    id 'com.github.dcendents.android-maven'
 }
+group = 'com.github.babel-cdm.cdmcomponents'
 
 android {
     compileSdkVersion buildConfig.compileSdk
