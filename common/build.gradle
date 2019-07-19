@@ -1,15 +1,27 @@
 plugins {
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.multiplatform'
 }
+
+android {
+    compileSdkVersion buildConfig.compileSdk
+    buildToolsVersion versions.buildTools
+
+    defaultConfig {
+        minSdkVersion buildConfig.minSdk
+        targetSdkVersion buildConfig.targetSdk
+    }
+
+}
+
 repositories {
     mavenCentral()
 }
 
 kotlin {
     targets {
-        fromPreset(presets.jvm, 'jvm')
-        // This preset is for iPhone emulator
-        // Switch here to presets.iosArm64 to build library for iPhone device
+        fromPreset(presets.android, 'android')
+
         fromPreset(presets.iosX64, 'ios') {
             compilations.main.outputKinds('FRAMEWORK')
         }
@@ -26,20 +38,21 @@ kotlin {
                 implementation "org.jetbrains.kotlin:kotlin-test-annotations-common:${versions.kotlin}"
             }
         }
-        jvmMain {
+        androidMain {
             dependencies {
                 implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
             }
         }
-        jvmTest {
+        androidTest {
             dependencies {
                 implementation "org.jetbrains.kotlin:kotlin-test:${versions.kotlin}"
                 implementation "org.jetbrains.kotlin:kotlin-test-junit:${versions.kotlin}"
             }
         }
         iosMain {
-        }
-        iosTest {
+            dependencies {
+                
+            }
         }
     }
 }
