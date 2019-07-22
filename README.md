@@ -1,6 +1,6 @@
-#CDMComponents
+# CDMComponents
 --
-##Installation
+## Installation
 ### iOS
 Import framework generated at:
 
@@ -36,35 +36,44 @@ Component to use custom logger.
 - ERROR(10) -> `logE`
 - NONE(0)
 
-###Set log level
-####iOS
+### Set log level
+#### iOS
+
 `CDMComponents().loggerUtils.setLevel(level: .debug)`
-####Android
+#### Android
+
 `CDMComponents.loggerUtils.setLevel(DEBUG)`
 
-###Log X
-####iOS
+### Log X
+#### iOS
+
 `CDMComponents().loggerUtils.logD(tag: "TAG", message: "MESSAGE")`
-#####Android
+##### Android
+
 `CDMComponents.loggerUtils.logD("TAG","MESSAGE")`
 
 ## SecurityUtils 
 Component to store info securely.
 ### StoreSecure -> `Either<CDMComponentsError,String>`
-####iOS
+#### iOS
+
 `CDMComponents().securityUtils.storeSecure(key:"KEY",value:"VALUE")`
-####Android
+#### Android
+
 `CDMComponents.securityUtils.storeSecure("KEY","VALUE")`
 
 ### Retrieve from secure storage -> `Either<CDMComponentsError,String>`
-####iOS
+#### iOS
+
 `CDMComponents().securityUtils.retrieveFromSecureStorage(key: "KEY")`
-####Android
+#### Android
+
 `CDMComponents.securityUtils.retrieveFromSecureStorage("KEY")`
 
 ## Common
 ### Either
-####iOS - fold
+#### iOS - fold
+
 	either.fold(left: { error in
             let e = error as! CommonCDMComponentsError
             print(e.id)
@@ -74,19 +83,43 @@ Component to store info securely.
             print(o)
             return nil
         })
-####Android - fold
+#### Android - fold
+
 	either.fold({
             Log.d("TAG","Error: $it")
         },{
             Log.d("TAG",it)
         })
-####iOS - map
+#### iOS - map
+
 	either.map(f: {result in
             let o = result as! String
             print(o)
             return nil
         })
-####Android - map
+#### Android - map
+
 	either.map { 
             Log.d("TAG",it)
         }
+
+## 🛑 Error codes
+### Android
+| Code                              |Title         |Description             |
+| ----------------------------------|--------------|------------------------|
+| <span style="color:red">**`2101`**|`SECURITY_DEFAULT_ANDROID_ERROR`|Security component default error.|
+| <span style="color:red">**`2102`**|`KEYSTORE_EXCEPTION`|Keystore exception error.|
+| <span style="color:red">**`2103`**|`KEY_EXCEPTION`|Key exception error.|
+| <span style="color:red">**`2104`**|`NULL_POINTER`|Security component null pointer error.|
+| <span style="color:red">**`2105`**|`APP_KEY_DOES_NOT_EXIST`|App key not exists error.|	
+### iOS
+| Code                              |Title         |Description             |
+| ----------------------------------|--------------|------------------------|
+| <span style="color:red">**`2201`**|`SECURITY_DEFAULT_IOS_ERROR`|Security component default error.|
+| <span style="color:red">**`2202`**|`KEY_NOT_FOUND`|App key not fould error.|
+| <span style="color:red">**`2203`**|`UNABLE_TO_ENCRYPT`|Encrypt error.|
+| <span style="color:red">**`2204`**|`WRONG_VALUE_PARAM`|Wrong value param error.|
+| <span style="color:red">**`2205`**|`SAVE_KEY_ERROR`|Error saving key.|
+| <span style="color:red">**`2206`**|`RECOVER_ERROR`|Error recovering.|
+| <span style="color:red">**`2207`**|`UNABLE_TO_DECRYPT`|Dencrypt error.|
+| <span style="color:red">**`2208`**|`ENCODING_ERROR`|Encoding error.|
