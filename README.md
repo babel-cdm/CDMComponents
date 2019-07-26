@@ -25,7 +25,13 @@ dependency
 	        implementation 'com.github.babel-cdm.CDMComponents:common:1.0.1@aar'
 	        implementation 'com.github.babel-cdm.CDMComponents:security:1.0.1@aar'
 	}
+manifest
 
+	<provider
+                tools:replace="android:authorities"
+                android:name="com.babel.cdm.components.security.SecurityUtilsProvider"
+                android:authorities="${applicationId}.components.security.SecurityUtilsProvider"
+                android:exported="false" />
 
 ## LoggerUtils
 Component to use custom logger.
