@@ -13,7 +13,7 @@ workspace.xml
 
 local.properties
 .gradle
-build
+/build
 translator/.gradle/2.9/taskArtifacts
 
 kotstd/kotstd.iml
@@ -63,5 +63,17 @@ tools/performance-server/node_modules
 tools/performance-server/server
 tools/performance-server/ui/js
 
+common/build
+security/build/bin
+security/build/classes
+security/build/generated
+security/build/intermediates
+security/build/kotlin
+security/build/libs
+security/build/outputs
+security/build/reports
+security/build/tmp
+
 #Exceptions
 !.idea/misc.xml
+!security/build/xcode-frameworks/**
