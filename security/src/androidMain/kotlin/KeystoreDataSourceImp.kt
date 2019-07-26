@@ -12,7 +12,7 @@ import java.security.UnrecoverableKeyException
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
-private const val NO_DESCRIPTION = "No description"
+const val NO_DESCRIPTION = "No description"
 
 class KeystoreDataSourceImp(
     private val keyStore: KeyStore,
