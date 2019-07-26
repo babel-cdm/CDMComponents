@@ -5,6 +5,7 @@ import android.util.Base64
 import com.babel.cdm.components.common.CDMComponentsError
 import com.babel.cdm.components.common.Either
 import com.babel.cdm.components.common.LoggerUtils
+import com.babel.cdm.components.common.flatMap
 import com.babel.cdm.components.security.AndroidCode.APP_KEY_DOES_NOT_EXIST
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -28,7 +29,8 @@ actual class SecurityUtils actual constructor() {
         var keystoreDataSource: KeystoreDataSource? = null
     ) {
         fun prefs(preferences: SharedPreferences) = apply { this.prefs = preferences }
-        fun keystoreDataSource(keystoreDataSource: KeystoreDataSource) = apply { this.keystoreDataSource = keystoreDataSource }
+        fun keystoreDataSource(keystoreDataSource: KeystoreDataSource) =
+            apply { this.keystoreDataSource = keystoreDataSource }
 
         fun build() = SecurityUtils(this)
     }
@@ -59,7 +61,7 @@ actual class SecurityUtils actual constructor() {
         val secretKey = obtainSecretKey(keystoreDataSource)
 
         LoggerUtils.logD(LOG_TAG, "Decrypting value...")
-        return secretKey.map { decryptText(encryptedValue, it) }
+        return secretKey.flatMap { decryptText(encryptedValue, it) }
 
     }
 
@@ -125,7 +127,11 @@ actual class SecurityUtils actual constructor() {
 
     }
 
-    private fun decryptText(toDecrypt: EncryptedValue, secretKey: SecretKey): String {
+    private fun decryptText(toDecrypt: EncryptedValue, secretKey: SecretKey): Either<SecurityError,String> {
+
+        toDecrypt.iv?.let {
+            if (it.isEmpty()) return Either.Left(SecurityError(AndroidCode.DECRYPT_ERROR.code, NO_DESCRIPTION))
+        }
 
         val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
 
@@ -138,7 +144,7 @@ actual class SecurityUtils actual constructor() {
         val decodedData = cipher.doFinal(toDecrypt.encrypted)
         LoggerUtils.logD(LOG_TAG, "Decrypted")
 
-        return String(decodedData, Charsets.UTF_8)
+        return Either.Right(String(decodedData, Charsets.UTF_8))
 
     }
 
