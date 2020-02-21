@@ -24,7 +24,7 @@
 
         <provider
                 android:name=".SecurityUtilsProvider"
-                android:authorities="com.babel.cdm.components.security.SecurityUtilsProvider"/>
+                android:authorities="${applicationId}.components.security.SecurityUtilsProvider"/>
 
     </application>
 
